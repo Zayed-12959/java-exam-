@@ -1,0 +1,80 @@
+interface BrakingSystem {
+    void applyBrake();
+}
+
+class DiskBrake implements BrakingSystem {
+    @Override
+    public void applyBrake() {
+        System.out.println("Disk brake activated!");
+    }
+}
+
+class DrumBrake implements BrakingSystem {
+    @Override
+    public void applyBrake() {
+        System.out.println("Drum brake activated!");
+    }
+}
+
+abstract class Motorcycle {
+
+    protected BrakingSystem frontBrake;
+    protected BrakingSystem rearBrake;
+    protected String modelName;
+
+    public Motorcycle(String modelName, BrakingSystem front, BrakingSystem rear) {
+        this.modelName = modelName;
+        this.frontBrake = front;
+        this.rearBrake = rear;
+    }
+
+
+    public void pressFrontLever() {
+        System.out.print(modelName + " front lever pressed: ");
+        this.frontBrake.applyBrake();
+    }
+
+    public void pressRearLever() {
+        System.out.print(modelName + " rear lever pressed: ");
+        this.rearBrake.applyBrake();
+    }
+}
+
+class HondaCG125 extends Motorcycle {
+    public HondaCG125() {
+        super("Honda CG125", new DrumBrake(), new DrumBrake());
+    }
+}
+
+class BajajDiscover125 extends Motorcycle {
+    public BajajDiscover125() {
+        super("Bajaj Discover 125", new DiskBrake(), new DrumBrake());
+    }
+}
+
+class YamahaR15M extends Motorcycle {
+    public YamahaR15M() {
+        super("Yamaha R15M", new DiskBrake(), new DiskBrake());
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        
+        Motorcycle honda = new HondaCG125();
+        Motorcycle bajaj = new BajajDiscover125();
+        Motorcycle yamaha = new YamahaR15M();
+
+        System.out.println("--- Testing Honda CG125 (Old/Lightweight) ---");
+        honda.pressFrontLever(); // Output: ... Drum brake activated!
+        honda.pressRearLever();  // Output: ... Drum brake activated!
+
+        System.out.println("\n--- Testing Bajaj Discover 125 (Standard) ---");
+        bajaj.pressFrontLever(); // Output: ... Disk brake activated!
+        bajaj.pressRearLever();  // Output: ... Drum brake activated!
+
+        System.out.println("\n--- Testing Yamaha R15M (Sports) ---");
+        yamaha.pressFrontLever(); // Output: ... Disk brake activated!
+        yamaha.pressRearLever();  // Output: ... Disk brake activated!
+    }
+}
