@@ -1,0 +1,86 @@
+interface TransactionSystem {
+    void makePayment(double amount);
+    void showTotalTransaction();
+}
+
+// ---------- Bkash Transaction Class ----------
+class Bkash implements TransactionSystem {
+    private double totalTransaction;
+    private int rewardPoints;
+
+    Bkash() {
+        this.totalTransaction = 0;
+        this.rewardPoints = 0;
+    }
+
+    private void updateRewardPoints() {
+        if (totalTransaction < 5000)
+            rewardPoints += 20;
+        else if (totalTransaction>=5000 && totalTransaction <= 10000)
+            rewardPoints += 50;
+        else
+            rewardPoints += 100;
+    }
+
+    @Override
+    public void makePayment(double amount) {
+        System.out.println("Bkash Payment: " + amount + " Taka");
+        totalTransaction += amount;
+        updateRewardPoints();
+    }
+
+    @Override
+    public void showTotalTransaction() {
+        System.out.println("Bkash Total Transaction: " + totalTransaction + " Taka");
+        System.out.println("Bkash Reward Points: " + rewardPoints);
+    }
+}
+
+
+class Card implements TransactionSystem {
+    private double totalTransaction;
+    private double totalDiscount;
+
+    Card() {
+        this.totalTransaction = 0;
+        this.totalDiscount = 0;
+    }
+
+    @Override
+    public void makePayment(double amount) {
+        double discount = amount * 0.05;
+        if (discount > 500) discount = 500;  // max discount limit
+
+        System.out.println("Card Payment: " + amount + " Taka");
+        System.out.println("Discount Earned: " + discount + " Taka");
+
+        totalTransaction += amount;
+        totalDiscount += discount;
+    }
+
+    @Override
+    public void showTotalTransaction() {
+        System.out.println("Card Total Transaction: " + totalTransaction + " Taka");
+        System.out.println("Total Discount Earned: " + totalDiscount + " Taka");
+    }
+}
+
+// ---------- Main Class ----------
+public class Main {
+    public static void main(String[] args) {
+        // Using polymorphism for flexibility and scalability
+        TransactionSystem bkashUser = new Bkash();
+        TransactionSystem cardUser = new Card();
+
+        System.out.println("---- Bkash Transactions ----");
+        bkashUser.makePayment(2000);
+        bkashUser.makePayment(3500);
+        bkashUser.makePayment(6000);
+        bkashUser.showTotalTransaction();
+
+        System.out.println("\n---- Card Transactions ----");
+        cardUser.makePayment(8000);
+        cardUser.makePayment(15000);
+        cardUser.showTotalTransaction();
+    }
+}
