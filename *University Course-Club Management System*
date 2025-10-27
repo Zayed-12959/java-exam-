@@ -1,0 +1,536 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+class InvalidCourseNoException extends Exception {
+    public InvalidCourseNoException(String message) {
+        super(message);
+    }
+}
+
+class InvalidCourseCreditException extends Exception {
+    public InvalidCourseCreditException(String message) {
+        super(message);
+    }
+}
+
+abstract class Course {
+    protected String courseNumber;
+    protected String courseTitle;
+    protected double courseCredit;
+
+    public Course(String courseTitle) {
+        this.courseTitle = courseTitle;
+    }
+
+    public String getCourseTitle() {
+        return this.courseTitle;
+    }
+    public String getCourseNumber() {
+        return this.courseNumber;
+    }
+    public double getCourseCredit() {
+        return this.courseCredit;
+    }
+
+    protected int getNumericPart(String courseNumber) throws InvalidCourseNoException {
+        if (courseNumber == null || courseNumber.length() < 5) {
+            throw new InvalidCourseNoException("Format error. Must be at least 5 chars (e.g., M1001).");
+        }
+
+        String lastFourChars = courseNumber.substring(courseNumber.length() - 4);
+
+        try {
+            return Integer.parseInt(lastFourChars);
+        } catch (NumberFormatException e) {
+            throw new InvalidCourseNoException("Format error. Course number must end with four digits.");
+        }
+    }
+
+    public abstract void getCourseinfo();
+    public abstract void setCourseNumber(String courseNumber) throws InvalidCourseNoException;
+    public abstract void setCourseCredit(double courseCredit) throws InvalidCourseCreditException;
+}
+
+class TheoryCourse extends Course {
+
+    private ArrayList<Double> quizMarks;
+    private double midtermExamMark;        // Out of 20
+    private double classPerformanceMark;   // Out of 10
+    private double semesterFinalExamMark;  // Out of 50
+
+    public TheoryCourse(String courseTitle) {
+        super(courseTitle);
+        this.quizMarks = new ArrayList<>();
+    }
+
+    @Override
+    public void setCourseNumber(String courseNumber) throws InvalidCourseNoException {
+        int number = getNumericPart(courseNumber);
+
+        //Theory course number must be ODD
+        if (number % 2 == 0) {
+            throw new InvalidCourseNoException("Theory course number (" + number + ") must be an ODD number.");
+        }
+        else{
+            this.courseNumber = courseNumber;
+        }
+        System.out.println("   > Course number " + courseNumber + " set.");
+    }
+
+    @Override
+    public void setCourseCredit(double courseCredit) throws InvalidCourseCreditException {
+
+        if (courseCredit <= 2.0 && courseCredit >= 4.0) {
+            throw new InvalidCourseCreditException("Theory credit (" + courseCredit + ") must be 2, 3, or 4.");
+        }
+        else{
+            this.courseCredit = courseCredit;
+        }
+        System.out.println("   > Course credit " + courseCredit + " set.");
+    }
+
+    @Override
+    public void getCourseinfo() {
+        System.out.println("Theory: " + this.getCourseNumber() + this.getCourseTitle() + this.getCourseCredit());
+    }
+
+
+
+    public void setMarks(ArrayList<Double> quizzes, double midterm, double classPerf, double finalExam) {
+        this.quizMarks = quizzes;
+        this.midtermExamMark = midterm;
+        this.classPerformanceMark = classPerf;
+        this.semesterFinalExamMark = finalExam;
+    }
+
+    public double calculateTotalMarks(int bestX) {
+        double scaledQuizMark = 0;
+
+        if (quizMarks != null && !quizMarks.isEmpty()) {
+            // 1. To find the "best" marks, we copy the list to avoid changing the original.
+            ArrayList<Double> sortedQuizzes = new ArrayList<>(this.quizMarks);
+
+            // 2. Sort the copied list in descending (reverse) order
+            Collections.sort(sortedQuizzes, Collections.reverseOrder());
+
+            double quizSum = 0;
+            // 3. Ensure we only take 'bestX' or the list size, whichever is smaller
+            int count = Math.min(bestX, sortedQuizzes.size());
+
+            // 4. Sum the top 'count' marks
+            for (int i = 0; i < count; i++) {
+                quizSum += sortedQuizzes.get(i);
+            }
+
+            // 5. Scale the result: (Mark / TotalPossible) * MaxWeight
+            // (quizSum / (count * 10)) * 20
+            if (count > 0) {
+                scaledQuizMark = (quizSum / (count * 10.0)) * 20.0;
+            }
+        }
+
+        // Sum all components for the final grade
+        return scaledQuizMark + this.midtermExamMark + this.classPerformanceMark + this.semesterFinalExamMark;
+    }
+
+    public double calculateTotalMarks() {
+        double scaledQuizMark = 0;
+
+        if (quizMarks != null && !quizMarks.isEmpty()) {
+            double quizSum = 0;
+
+            // Iterate through the ArrayList to get the sum
+            for (double mark : quizMarks) {
+                quizSum += mark;
+            }
+
+            // Get the average (which is out of 10)
+            double average = quizSum / quizMarks.size();
+
+            // Scale the average to be out of 20
+            // (average / 10) * 20, which simplifies to average * 2
+            scaledQuizMark = average * 2.0;
+        }
+
+        // Sum all components for the final grade
+        return scaledQuizMark + this.midtermExamMark + this.classPerformanceMark + this.semesterFinalExamMark;
+    }
+}
+
+class LabCourse extends Course {
+
+    public LabCourse(String courseTitle) {
+        super(courseTitle);
+    }
+
+    @Override
+    public void setCourseNumber(String courseNumber) throws InvalidCourseNoException {
+        int number = getNumericPart(courseNumber);
+
+        //Lab course number must be EVEN
+        if (number % 2 != 0) {
+            throw new InvalidCourseNoException("Lab course number (" + number + ") must be an EVEN number.");
+        }
+        else{
+            this.courseNumber = courseNumber;
+        }
+        System.out.println("   > Course number " + courseNumber + " set.");
+    }
+
+    @Override
+    public void setCourseCredit(double courseCredit) throws InvalidCourseCreditException {
+        //Lab credit must be 0.75 or 1.5
+        if (courseCredit != 0.75 && courseCredit != 1.5) {
+            throw new InvalidCourseCreditException("Lab credit (" + courseCredit + ") must be 0.75 or 1.5.");
+        }
+        else{
+            this.courseCredit = courseCredit;
+        }
+        System.out.println("   > Course credit " + courseCredit + " set.");
+    }
+
+    @Override
+    public void getCourseinfo() {
+        System.out.println("Lab: " + this.getCourseNumber() + this.getCourseTitle() + this.getCourseCredit());
+    }
+}
+
+abstract class Club {
+    private String clubName;
+    private ArrayList<Student> members;
+
+    public Club(String clubName) {
+        this.clubName = clubName;
+        this.members = new ArrayList<>();
+    }
+
+    public abstract boolean isEligible(Student s);
+
+    public void addMember(Student s) {
+        this.members.add(s);
+    }
+
+    public String getClubName() {
+        return this.clubName;
+    }
+}
+
+class ProgrammingClub extends Club {
+    public ProgrammingClub() {
+        super("Programming Club");
+    }
+
+    @Override
+    public boolean isEligible(Student s) {
+        return (s instanceof CseStudent || s instanceof EeeStudent);
+    }
+}
+
+class RoboticsClub extends Club {
+    public RoboticsClub() {
+        super("Robotics Club");
+    }
+
+    @Override
+    public boolean isEligible(Student s) {
+        return (s instanceof CseStudent || s instanceof EeeStudent || s instanceof MeStudent);
+    }
+}
+
+class PhotographyClub extends Club {
+    public PhotographyClub() {
+        super("Photography Club");
+    }
+
+    @Override
+    public boolean isEligible(Student s) {
+        return true;
+    }
+}
+
+abstract class Student {
+    private String name;
+    private String id;
+    private String department;
+
+    private ArrayList<Course> coursesEnrolled;
+    private ArrayList<Club> clubsJoined;
+
+    public Student(String name, String id, String department) {
+        this.name = name;
+        this.id = id;
+        this.department = department;
+        this.coursesEnrolled = new ArrayList<>();
+        this.clubsJoined = new ArrayList<>();
+    }
+
+    public void enrollInCourse(Course course) {
+        this.coursesEnrolled.add(course);
+        System.out.println(this.name + " has successfully enrolled in " + course.getCourseTitle());
+    }
+
+    public void joinClub(Club club) {
+        this.clubsJoined.add(club);
+    }
+
+    public String getName() {
+        return this.name;
+    }
+    public String getId() {
+        return this.id;
+    }
+    public String getDepartment() {
+        return this.department;
+    }
+}
+
+class CseStudent extends Student {
+
+    private ArrayList<String> programmingLanguages;
+    private ArrayList<String> softwareProjects;
+
+    public CseStudent(String name, String id) {
+        super(name, id, "CSE");
+        this.programmingLanguages = new ArrayList<>();
+        this.softwareProjects = new ArrayList<>();
+    }
+
+    public void addLanguage(String lang) {
+        this.programmingLanguages.add(lang);
+    }
+    public void addProject(String project) {
+        this.softwareProjects.add(project);
+    }
+}
+
+class EeeStudent extends Student {
+    private int labHours;
+    private ArrayList<String> circuitDesigns;
+
+    public EeeStudent(String name, String id) {
+        super(name, id, "EEE");
+        this.labHours = 0;
+        this.circuitDesigns = new ArrayList<>();
+    }
+
+    public void addLabHours(int hours) {
+        this.labHours += hours;
+    }
+    public void addDesign(String design) {
+        this.circuitDesigns.add(design);
+    }
+}
+
+class MeStudent extends Student {
+    private ArrayList<String> cadTools;
+    private ArrayList<String> mechanicalPrototypes;
+
+    public MeStudent(String name, String id) {
+        super(name, id, "ME");
+        this.cadTools = new ArrayList<>();
+        this.mechanicalPrototypes = new ArrayList<>();
+    }
+
+    public void addCadTool(String tool) {
+        this.cadTools.add(tool);
+    }
+    public void addPrototype(String proto) {
+        this.mechanicalPrototypes.add(proto);
+    }
+}
+
+class BbaStudent extends Student {
+    private ArrayList<String> internships;
+    private ArrayList<String> workshops;
+
+    public BbaStudent(String name, String id) {
+        super(name, id, "BBA");
+        this.internships = new ArrayList<>();
+        this.workshops = new ArrayList<>();
+    }
+
+    public void addInternship(String company) {
+        this.internships.add(company);
+    }
+    public void addWorkshop(String topic) {
+        this.workshops.add(topic);
+    }
+}
+
+
+class UniversitySystem {
+    private ArrayList<Student> allStudents;
+    private ArrayList<Course> allCourses;
+    private ArrayList<Club> allClubs;
+
+    public UniversitySystem() {
+        this.allStudents = new ArrayList<>();
+        this.allCourses = new ArrayList<>();
+        this.allClubs = new ArrayList<>();
+    }
+
+    public void addStudent(Student student) {
+        this.allStudents.add(student);
+    }
+
+    public void addCourse(Course course) {
+        this.allCourses.add(course);
+    }
+
+    public void addClub(Club club) {
+        this.allClubs.add(club);
+    }
+
+    public void enrollStudent(Student student, Course course) {
+        student.enrollInCourse(course);
+    }
+
+    public void joinClub(Student student, Club club) {
+        System.out.println("Attempting to add " + student.getName() + " to " + club.getClubName());
+
+        if (club.isEligible(student)) {
+            student.joinClub(club);
+            club.addMember(student);
+            System.out.println("   Success: " + student.getName() + " has joined the " + club.getClubName());
+        } else {
+            System.out.println("   Failed: " + student.getName() + " (" + student.getDepartment() + ") is not eligible to join.");
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+
+        UniversitySystem university = new UniversitySystem();
+
+        Student s1 = new CseStudent("Alice", "101");
+        Student s2 = new EeeStudent("Bob", "102");
+        Student s3 = new MeStudent("Charlie", "103");
+        Student s4 = new BbaStudent("David", "104");
+
+        university.addStudent(s1);
+        university.addStudent(s2);
+        university.addStudent(s3);
+        university.addStudent(s4);
+
+        Course c1 = null;
+        Course c2 = null;
+        TheoryCourse oop = null;
+
+        try {
+            // --- THIS IS THE FIX ---
+            // "CSE101" was invalid. "CSE1001" is valid (ends in 4 digits, is odd).
+            c1 = new TheoryCourse("Intro to Programming");
+            c1.setCourseNumber("CSE1001");
+            c1.setCourseCredit(3.0);
+            university.addCourse(c1);
+
+            // "EEE102" was invalid. "EEE1002" is valid (ends in 4 digits, is even).
+            c2 = new LabCourse("Circuits Lab");
+            c2.setCourseNumber("EEE1002");
+            c2.setCourseCredit(1.5);
+            university.addCourse(c2);
+
+            // "CSE201" was invalid. "CSE2001" is valid.
+            oop = new TheoryCourse("Object Oriented Programming");
+            oop.setCourseNumber("CSE2001");
+            oop.setCourseCredit(3.0);
+
+        } catch (InvalidCourseNoException | InvalidCourseCreditException e) {
+            System.out.println("Error setting up initial courses: " + e.getMessage());
+            return; // Exit if setup fails
+        }
+
+
+        Club programmingClub = new ProgrammingClub();
+        Club roboticsClub = new RoboticsClub();
+        Club photographyClub = new PhotographyClub();
+
+        university.addClub(programmingClub);
+        university.addClub(roboticsClub);
+        university.addClub(photographyClub);
+
+
+        System.out.println("\n--- Testing Course Enrollment ---");
+        university.enrollStudent(s1, c1);
+        university.enrollStudent(s2, c2);
+
+        System.out.println("\n--- Testing Club Membership ---");
+        university.joinClub(s1, programmingClub);
+        university.joinClub(s4, programmingClub);
+        university.joinClub(s3, roboticsClub);
+        university.joinClub(s4, roboticsClub);
+        university.joinClub(s2, photographyClub);
+        university.joinClub(s4, photographyClub);
+
+
+        System.out.println("\n--- Testing Mark Calculation ---");
+        ArrayList<Double> quizzes = new ArrayList<>();
+        quizzes.add(8.0);
+        quizzes.add(7.0);
+        quizzes.add(9.5);
+        quizzes.add(8.5);
+        oop.setMarks(quizzes, 18.0, 9.0, 45.0);
+
+        double totalBest2 = oop.calculateTotalMarks(2);
+        System.out.println("--- Calculating with 'Best 2' rule ---");
+        System.out.printf("Final Mark: %.2f%n", totalBest2);
+
+        double totalAverage = oop.calculateTotalMarks();
+        System.out.println("\n--- Calculating with 'Average' rule ---");
+        System.out.printf("Final Mark: %.2f%n", totalAverage);
+
+
+        System.out.println("\n--- Testing User Input & Exceptions ---");
+        Scanner scanner = new Scanner(System.in);
+
+        // Renamed 'oop' to 'theoryCourseFromInput'
+        System.out.println("--- Creating Theory Course 'DSA' ---");
+        Course theoryCourseFromInput = new TheoryCourse("DSA");
+
+        try {
+            System.out.print("Enter course number (e.g., CSE2205): ");
+            String number = scanner.nextLine();
+            theoryCourseFromInput.setCourseNumber(number);
+
+            System.out.print("Enter course credit (e.g., 3): ");
+            double credit = scanner.nextDouble();
+            theoryCourseFromInput.setCourseCredit(credit);
+
+            System.out.println("SUCCESS: Theory Course created.");
+            theoryCourseFromInput.getCourseinfo(); // Display info
+
+        } catch (InvalidCourseNoException | InvalidCourseCreditException e) {
+            System.out.println("ERROR: " + e.getMessage());
+        } catch (InputMismatchException e) {
+            System.out.println("ERROR: Invalid input. Credit must be a number.");
+        }
+
+        scanner.nextLine(); // Consume newline
+
+        System.out.println("\n--- Creating Lab Course 'DSA Lab' ---");
+        Course labCourseFromInput = new LabCourse("DSA Lab");
+
+        try {
+            System.out.print("Enter course number (e.g., CSE2206): ");
+            String number = scanner.nextLine();
+            labCourseFromInput.setCourseNumber(number);
+
+            System.out.print("Enter course credit (e.g., 1.5): ");
+            double credit = scanner.nextDouble();
+            labCourseFromInput.setCourseCredit(credit);
+
+            System.out.println("SUCCESS: Lab Course created.");
+            labCourseFromInput.getCourseinfo(); // Display info
+
+        } catch (InvalidCourseNoException | InvalidCourseCreditException e) {
+            System.out.println("ERROR: " + e.getMessage());
+        } catch (InputMismatchException e) {
+            System.out.println("ERROR: Invalid input. Credit must be a number.");
+        }
+
+        scanner.close();
+    }
+}
