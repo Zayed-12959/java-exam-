@@ -1,0 +1,87 @@
+class CardExpiredException extends Exception {
+    public CardExpiredException(String message) {
+        super(message);
+    }
+}
+
+class LimitExceededException extends Exception {
+    public LimitExceededException(String message) {
+        super(message);
+    }
+}
+
+class GiftCard {
+    private String cardNo;
+    private String cardType;
+    private double monetaryLimit;
+    private Date expiryDate;
+
+    public GiftCard(String cardNo, String cardType, Date expiryDate) {
+        this.cardNo = cardNo;
+        this.cardType = cardType;
+        this.expiryDate = expiryDate;
+        this.setMonetaryLimit();
+    }
+
+    private void setMonetaryLimit() {
+        if (this.cardType.equalsIgnoreCase("Bronze")) {
+            this.monetaryLimit = (double)2000.0F;
+        } else if (this.cardType.equalsIgnoreCase("Silver")) {
+            this.monetaryLimit = (double)5000.0F;
+        } else if (this.cardType.equalsIgnoreCase("Gold")) {
+            this.monetaryLimit = (double)10000.0F;
+        } else {
+            this.monetaryLimit = (double)0.0F;
+        }
+
+    }
+
+    public void makePurchase(double amount, Date currentDate) throws CardExpiredException, LimitExceededException {
+        if (currentDate.after(this.expiryDate)) {
+            throw new CardExpiredException("❌ Card has expired on: " + String.valueOf(this.expiryDate));
+        } else if (amount > this.monetaryLimit) {
+            throw new LimitExceededException("❌ Purchase amount exceeds limit of Tk. " + this.monetaryLimit);
+        } else {
+            System.out.println("✅ Purchase of Tk. " + amount + " approved using " + this.cardType + " card.");
+        }
+    }
+
+    public void showCardInfo() {
+        System.out.println("Card No: " + this.cardNo);
+        System.out.println("Card Type: " + this.cardType);
+        System.out.println("Limit: Tk. " + this.monetaryLimit);
+        System.out.println("Expiry Date: " + String.valueOf(this.expiryDate));
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Date expiry = new Date(125, 10, 30);
+        Date today = new Date(125, 9, 25);
+        GiftCard card1 = new GiftCard("GC1001", "Bronze", expiry);
+        card1.showCardInfo();
+        System.out.println();
+
+        try {
+            card1.makePurchase((double)1500.0F, today);
+            card1.makePurchase((double)2500.0F, today);
+        } catch (CardExpiredException e) {
+            System.out.println(e.getMessage());
+        } catch (LimitExceededException e) {
+            System.out.println(e.getMessage());
+        }
+
+        System.out.println("\n--- Checking Expired Card ---");
+        Date expiredDate = new Date(124, 11, 31);
+        GiftCard card2 = new GiftCard("GC2002", "Gold", expiredDate);
+
+        try {
+            card2.makePurchase((double)5000.0F, today);
+        } catch (CardExpiredException e) {
+            System.out.println(e.getMessage());
+        } catch (LimitExceededException e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
+}
