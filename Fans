@@ -1,0 +1,181 @@
+import java.util.*;
+
+
+interface RemoteControllable {
+    void remoteOn();
+    void remoteOff();
+}
+
+
+abstract class Fan {
+    protected String brand;
+    protected int speedLevels;
+
+    public Fan(String brand, int speedLevels) {
+        this.brand = brand;
+        this.speedLevels = speedLevels;
+    }
+
+    public void turnOn() {
+        System.out.println(brand + " fan is ON.");
+    }
+
+    public void turnOff() {
+        System.out.println(brand + " fan is OFF.");
+    }
+
+    public void setSpeed(int level) {
+        if (level > 0 && level <= speedLevels)
+            System.out.println(brand + " fan speed set to level " + level);
+        else
+            System.out.println("Invalid speed level.");
+    }
+
+    public void setSpeed() {
+        System.out.println(brand + " fan speed set to default level 1.");
+    }
+
+    public abstract void displayInfo();
+}
+
+
+class CeilingFan extends Fan implements RemoteControllable {
+    public CeilingFan(String brand, int speedLevels) {
+        super(brand, speedLevels);
+    }
+
+    public void installOnCeiling() {
+        System.out.println(brand + " ceiling fan installed on ceiling.");
+    }
+
+    @Override
+    public void remoteOn() {
+        System.out.println(brand + " ceiling fan ON via remote.");
+    }
+
+    @Override
+    public void remoteOff() {
+        System.out.println(brand + " ceiling fan OFF via remote.");
+    }
+
+    @Override
+    public void displayInfo() {
+        System.out.println("Ceiling Fan - Brand: " + brand);
+    }
+}
+
+
+abstract class StandFan extends Fan {
+    protected int height;
+
+    public StandFan(String brand, int speedLevels, int height) {
+        super(brand, speedLevels);
+        this.height = height;
+    }
+
+    public void adjustHeight(int h) {
+        height = h;
+        System.out.println(brand + " fan height adjusted to " + height + " cm.");
+    }
+}
+
+
+class DeskFan extends Fan {
+    public DeskFan(String brand, int speedLevels) {
+        super(brand, speedLevels);
+    }
+
+    @Override
+    public void displayInfo() {
+        System.out.println("Desk Fan - Brand: " + brand);
+    }
+}
+
+
+class TowerFan extends StandFan implements RemoteControllable {
+    public TowerFan(String brand, int speedLevels, int height) {
+        super(brand, speedLevels, height);
+    }
+
+    @Override
+    public void remoteOn() {
+        System.out.println(brand + " tower fan ON via remote.");
+    }
+
+    @Override
+    public void remoteOff() {
+        System.out.println(brand + " tower fan OFF via remote.");
+    }
+
+    @Override
+    public void displayInfo() {
+        System.out.println("Tower Fan - Brand: " + brand);
+    }
+}
+
+
+class PedestalFan extends StandFan {
+    public PedestalFan(String brand, int speedLevels, int height) {
+        super(brand, speedLevels, height);
+    }
+
+    @Override
+    public void displayInfo() {
+        System.out.println("Pedestal Fan - Brand: " + brand);
+    }
+}
+
+
+class Salesman {
+    private String name;
+
+    public Salesman(String name) {
+        this.name = name;
+    }
+
+    public void sellFan(Fan f) {
+        if (f instanceof RemoteControllable)
+            System.out.println(name + " sold a remote-controlled " + f.brand + " fan.");
+        else
+            System.out.println(name + " cannot sell " + f.brand + " (no remote).");
+    }
+}
+
+
+public class Main {
+    public static void main(String[] args) {
+        ArrayList<Fan> fans = new ArrayList<>();
+
+        fans.add(new CeilingFan("Samsung", 5));
+        fans.add(new DeskFan("Miyako", 3));
+        fans.add(new TowerFan("LG", 4, 120));
+        fans.add(new PedestalFan("Vision", 3, 140));
+
+        Salesman s = new Salesman("Rafi");
+
+        System.out.println("=== FAN INFORMATION (Polymorphism) ===");
+        for (int i = 0; i < fans.size(); i++) {
+            Fan f = fans.get(i);          // Dynamic Method Dispatch
+            f.displayInfo();              // Polymorphism
+            f.turnOn();
+            f.setSpeed(2);                // Overloaded method
+            f.turnOff();
+            System.out.println();
+        }
+
+        System.out.println("=== SALES CHECK ===");
+        for (int i = 0; i < fans.size(); i++) {
+            s.sellFan(fans.get(i));
+        }
+
+        System.out.println("\n=== REMOTE FAN CONTROL ===");
+        for (int i = 0; i < fans.size(); i++) {
+            Fan f = fans.get(i);
+            if (f instanceof RemoteControllable) {
+                RemoteControllable r = (RemoteControllable) f;
+                r.remoteOn();
+                r.remoteOff();
+            }
+        }
+    }
+}
