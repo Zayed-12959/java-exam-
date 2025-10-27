@@ -1,0 +1,90 @@
+class Room {
+
+    private String roomNo;
+    private boolean[] bookingInfo;
+
+    public Room(String roomNo) {
+        if (roomNo == null || roomNo.trim().isEmpty()) {
+            throw new IllegalArgumentException("Room number cannot be null or empty.");
+        }
+        else{
+            this.roomNo = roomNo;
+            this.bookingInfo = new boolean[365];
+        }
+    }
+
+    public String getRoomNo() {
+        return this.roomNo;
+    }
+
+    private boolean isValidDay(int day) {
+        return day >= 1 && day <= 365;
+    }
+
+    public boolean book(int day) {
+        if (!isValidDay(day)) {
+            System.out.println("Error: Invalid day number " + day + ". Must be between 1 and 365.");
+            return false;
+        }
+        int index = day - 1; // Adjust day number (1-365) to array index (0-364)
+        if (this.bookingInfo[index]) {
+            System.out.println("Error: Room " + this.roomNo + " is already booked for day " + day + ".");
+            return false;
+        }
+        else{
+            this.bookingInfo[index] = true;
+            System.out.println("Success: Room " + this.roomNo + " booked for day " + day + ".");
+            return true;
+        }
+    }
+
+    public void cancelBooking(int day) {
+        if (!isValidDay(day)) {
+            System.out.println("Error: Invalid day number " + day + ". Cannot cancel.");
+            return;
+        }
+        int index = day - 1;
+        if (this.bookingInfo[index]) {
+            System.out.println("Success: Booking for room " + this.roomNo + " on day " + day + " is cancelled.");
+            this.bookingInfo[index] = false;
+        } else {
+            System.out.println("Info: Room " + this.roomNo + " was not booked for day " + day + ".");
+        }
+    }
+
+    public boolean isBooked(int day) {
+        if (!isValidDay(day)) {
+            System.out.println("Error: Invalid day number " + day + ".");
+            return false; // Or throw an exception, depending on requirements
+        }
+        else{
+            int index = day - 1;
+            return this.bookingInfo[index];
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+
+        Room a1 = new Room("A1");
+
+        System.out.println("Booking room " + a1.getRoomNo() + " for day # 10");
+        a1.book(10); // Use the book method
+
+        if (a1.isBooked(10)) {
+            System.out.println("Verification: Room " + a1.getRoomNo() + " is confirmed booked for day 10.");
+        }
+
+        System.out.println("\nCancelling booking for day # 11");
+        a1.cancelBooking(11); // Use the cancel method
+
+        // Try cancelling again to see the info message
+        System.out.println("\nTrying to cancel booking for day # 11 again");
+        a1.cancelBooking(11);
+
+        // Try booking an invalid day
+        System.out.println("\nTrying to book for day # 400");
+        a1.book(400);
+    }
+}
