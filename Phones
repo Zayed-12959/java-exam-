@@ -1,0 +1,38 @@
+abstract class MobilePhone {
+    public abstract void receiveCall(String callerName);
+}
+
+
+class FeaturePhone extends MobilePhone {
+    @Override
+    public void receiveCall(String callerName) {
+        System.out.println("Feature Phone - Incoming call from: " + callerName);
+    }
+}
+
+
+class SmartPhone extends MobilePhone {
+
+    private void displayCallerPicture(String callerName) {
+        System.out.println("Displaying picture of: " + callerName);
+    }
+
+    @Override
+    public void receiveCall(String callerName) {
+        System.out.println("Smartphone - Incoming call from: " + callerName);
+        displayCallerPicture(callerName);
+    }
+}
+
+
+public class Main {
+    public static void main(String[] args) {
+        // Dynamic method dispatch demonstration
+        MobilePhone phone1 = new FeaturePhone();
+        MobilePhone phone2 = new SmartPhone();
+
+        phone1.receiveCall("Alice");
+        System.out.println();
+        phone2.receiveCall("Bob");
+    }
+}
