@@ -1,0 +1,166 @@
+import java.util.*;
+
+
+interface TemperatureControl {
+    void setTemperature(int temp);
+}
+
+interface FanSpeedControl {
+    void setFanSpeed(int speed);
+}
+
+interface VoiceControl {
+    void voiceCommand(String command);
+}
+
+
+abstract class AirConditioner {
+    protected double coolingCapacity;
+    protected double powerConsumption;
+    protected double price;
+
+    AirConditioner(double coolingCapacity, double powerConsumption, double price) {
+        this.coolingCapacity = coolingCapacity;
+        this.powerConsumption = powerConsumption;
+        this.price = price;
+    }
+
+    public abstract void info();
+
+    public int compareAC(AirConditioner other) {
+        if (this.coolingCapacity > other.coolingCapacity)
+            return 1;
+        else if (this.coolingCapacity < other.coolingCapacity)
+            return -1;
+        else if (this.powerConsumption < other.powerConsumption)
+            return 1;
+        else if (this.powerConsumption > other.powerConsumption)
+            return -1;
+        else
+            return 0;
+    }
+}
+
+
+class WindowAC extends AirConditioner implements TemperatureControl, FanSpeedControl {
+    WindowAC(double coolingCapacity, double powerConsumption, double price) {
+        super(coolingCapacity, powerConsumption, price);
+    }
+
+    @Override
+    public void setTemperature(int temp) {
+        System.out.println("Window AC temperature set to " + temp + "°C");
+    }
+
+    @Override
+    public void setFanSpeed(int speed) {
+        System.out.println("Window AC fan speed set to level " + speed);
+    }
+
+    @Override
+    public void info() {
+        System.out.println("Window AC - Affordable choice for small rooms");
+        System.out.println("Cooling: " + coolingCapacity + " tons, Power: " + powerConsumption + "W, Price: " + price + " BDT");
+    }
+}
+
+class SplitAC extends AirConditioner implements TemperatureControl, FanSpeedControl, VoiceControl {
+    SplitAC(double coolingCapacity, double powerConsumption, double price) {
+        super(coolingCapacity, powerConsumption, price);
+    }
+
+    @Override
+    public void setTemperature(int temp) {
+        System.out.println("Split AC temperature set to " + temp + "°C");
+    }
+
+    @Override
+    public void setFanSpeed(int speed) {
+        System.out.println("Split AC fan speed set to level " + speed);
+    }
+
+    @Override
+    public void voiceCommand(String command) {
+        System.out.println("Split AC executing voice command: " + command);
+    }
+
+    @Override
+    public void info() {
+        System.out.println("Split AC - Efficient cooling for larger spaces");
+        System.out.println("Cooling: " + coolingCapacity + " tons, Power: " + powerConsumption + "W, Price: " + price + " BDT");
+    }
+}
+
+class InverterAC extends AirConditioner implements TemperatureControl, FanSpeedControl {
+    InverterAC(double coolingCapacity, double powerConsumption, double price) {
+        super(coolingCapacity, powerConsumption, price);
+    }
+
+    @Override
+    public void setTemperature(int temp) {
+        System.out.println("Inverter AC temperature set to " + temp + "°C");
+    }
+
+    @Override
+    public void setFanSpeed(int speed) {
+        System.out.println("Inverter AC fan speed set to level " + speed);
+    }
+
+    @Override
+    public void info() {
+        System.out.println("Inverter AC - Fast and efficient cooling");
+        System.out.println("Cooling: " + coolingCapacity + " tons, Power: " + powerConsumption + "W, Price: " + price + " BDT");
+    }
+}
+
+class SmartAC extends InverterAC implements VoiceControl {
+    SmartAC(double coolingCapacity, double powerConsumption, double price) {
+        super(coolingCapacity, powerConsumption, price);
+    }
+
+    @Override
+    public void voiceCommand(String command) {
+        System.out.println("Smart AC executing voice command via smartphone: " + command);
+    }
+
+    @Override
+    public void info() {
+        System.out.println("Smart AC - Inverter AC with smartphone and voice control");
+        System.out.println("Cooling: " + coolingCapacity + " tons, Power: " + powerConsumption + "W, Price: " + price + " BDT");
+    }
+}
+
+
+public class Main {
+    public static void main(String[] args) {
+        ArrayList<AirConditioner> acList = new ArrayList<>();
+
+        acList.add(new WindowAC(1.0, 1200, 35000));
+        acList.add(new SplitAC(1.5, 1500, 55000));
+        acList.add(new InverterAC(2.0, 1300, 60000));
+        acList.add(new SmartAC(2.0, 1200, 75000));
+
+        System.out.println("----- AC Information -----");
+        for (int i = 0; i < acList.size(); i++) {
+            acList.get(i).info();
+            System.out.println();
+        }
+
+        System.out.println("----- Sorted by Cooling & Power -----");
+
+        for (int i = 0; i < acList.size() - 1; i++) {
+            for (int j = i + 1; j < acList.size(); j++) {
+                if (acList.get(i).compareAC(acList.get(j)) < 0) {
+                    AirConditioner temp = acList.get(i);
+                    acList.set(i, acList.get(j));
+                    acList.set(j, temp);
+                }
+            }
+        }
+
+        for (int i = 0; i < acList.size(); i++) {
+            acList.get(i).info();
+            System.out.println();
+        }
+    }
+}
