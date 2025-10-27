@@ -1,0 +1,112 @@
+abstract class Person {
+    protected String firstName;
+    protected String lastName;
+
+    Person(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+    public abstract void displayInfo();
+}
+
+
+class Student extends Person {
+    private int studentId;
+
+    Student(String firstName, String lastName, int studentId) {
+        super(firstName, lastName);
+        this.studentId = studentId;
+    }
+
+    public int getStudentId() {
+        return studentId;
+    }
+
+    public void displayInfo() {
+        System.out.println("Student: " + firstName + " " + lastName + ", ID: " + studentId);
+    }
+}
+
+
+class Teacher extends Person {
+    private int employeeId;
+
+    Teacher(String firstName, String lastName, int employeeId) {
+        super(firstName, lastName);
+        this.employeeId = employeeId;
+    }
+
+    public int getEmployeeId() {
+        return employeeId;
+    }
+
+    public void displayInfo() {
+        System.out.println("Teacher: " + firstName + " " + lastName + ", Employee ID: " + employeeId);
+    }
+}
+
+
+class SearchUtility {
+
+    // Overloaded method 1: Search Student by first and last name
+    public static Student search(Student[] students, String firstName, String lastName) {
+        for (int i = 0; i < students.length; i++) {
+            if (students[i].firstName.equals(firstName) &&
+                    students[i].lastName.equals(lastName)) {
+                return students[i];
+            }
+        }
+        return null;
+    }
+
+    // Overloaded method 2: Search Student by ID
+    public static Student search(Student[] students, int id) {
+        for (int i = 0; i < students.length; i++) {
+            if (students[i].getStudentId() == id)
+                return students[i];
+        }
+        return null;
+    }
+
+    // Overloaded method 3: Search Teacher by employee ID
+    public static Teacher search(Teacher[] teachers, int employeeId) {
+        for (int i = 0; i < teachers.length; i++) {
+            if (teachers[i].getEmployeeId() == employeeId)
+                return teachers[i];
+        }
+        return null;
+    }
+}
+
+// ---------- Main Class ----------
+public class Main {
+    public static void main(String[] args) {
+        // Creating sample data
+        Student[] students = {
+                new Student("Alice", "Rahman", 101),
+                new Student("Bob", "Khan", 102),
+                new Student("Charlie", "Hossain", 103)
+        };
+
+        Teacher[] teachers = {
+                new Teacher("David", "Karim", 201),
+                new Teacher("Emma", "Hasan", 202)
+        };
+
+        // Search student by name
+        Student s1 = SearchUtility.search(students, "Alice", "Rahman");
+        if (s1 != null) s1.displayInfo();
+        else System.out.println("Student not found");
+
+        // Search student by ID
+        Student s2 = SearchUtility.search(students, 103);
+        if (s2 != null) s2.displayInfo();
+        else System.out.println("Student not found");
+
+        // Search teacher by employee ID
+        Teacher t1 = SearchUtility.search(teachers, 202);
+        if (t1 != null) t1.displayInfo();
+        else System.out.println("Teacher not found");
+    }
+}
