@@ -1,0 +1,115 @@
+class InvalidStudentNameException extends Exception {
+    public InvalidStudentNameException(String message) {
+        super(message);
+    }
+}
+
+class InvalidSemesterException extends Exception {
+    public InvalidSemesterException(String message) {
+        super(message);
+    }
+}
+
+class Student {
+
+    private String studentName;
+    private String semester;
+
+    public Student(String studentName, String semester) throws InvalidStudentNameException, InvalidSemesterException {
+        setStudentName(studentName);
+        setSemester(semester);
+    }
+
+    public String getStudentName() {
+        return studentName;
+    }
+
+    public String getSemester() {
+        return semester;
+    }
+
+    public void setStudentName(String studentName) throws InvalidStudentNameException {
+        if (studentName == null || studentName.trim().isEmpty()) {
+            throw new InvalidStudentNameException("Student name cannot be empty.");
+        }
+
+        String[] nameParts = studentName.split(" ");
+        if (nameParts.length == 0) {
+            throw new InvalidStudentNameException("Student name cannot be empty.");
+        }
+
+        // Iterate over each part of the name
+        for (int i = 0; i < nameParts.length; i++) {
+            String part = nameParts[i];
+            
+            if (part.isEmpty()) continue; // Handle multiple spaces like "John  Doe"
+
+            // 1. Check if first letter is uppercase
+            if (!Character.isUpperCase(part.charAt(0))) {
+                throw new InvalidStudentNameException("Name part '" + part + "' must start with an uppercase letter.");
+            }
+
+            // 2. Check if the rest of the letters are lowercase
+            for (int i = 1; i < part.length(); i++) {
+                char c = part.charAt(i);
+                if (!Character.isLowerCase(c)) {
+                    throw new InvalidStudentNameException("Name part '" + part + "' must have all lowercase letters after the first one. Found: '" + c + "'");
+                }
+            }
+        }
+        this.studentName = studentName;
+    }
+
+    public void setSemester(String semester) throws InvalidSemesterException {
+        if (semester == null || semester.trim().isEmpty()) {
+            throw new InvalidSemesterException("Semester cannot be empty.");
+        }
+
+        String yearPart = "";
+
+        // 1. Check prefix and get the year part
+        if (semester.startsWith("Spring ")) {
+            yearPart = semester.substring(7); // "Spring " is 7 chars
+        } else if (semester.startsWith("Fall ")) {
+            yearPart = semester.substring(5); // "Fall " is 5 chars
+        } else {
+            throw new InvalidSemesterException("Semester must start with 'Spring ' or 'Fall ' (with a space).");
+        }
+
+        // 2. Check if year part is 4 characters long
+        if (yearPart.length() != 4) {
+            throw new InvalidSemesterException("Semester year part must be 4 digits. Found: '" + yearPart + "'");
+        }
+
+        // 3. Check if year part is numeric
+        for (int i = 0; i < yearPart.length(); i++) {
+            char c = yearPart.charAt(i);
+            if (!Character.isDigit(c)) {
+                throw new InvalidSemesterException("Semester year part must be numeric. Found: '" + c + "'");
+            }
+        }
+
+        // All checks passed
+        this.semester = semester;
+    }
+
+    @Override
+    public String toString() {
+        return "Student(Name: '" + studentName + "', Semester: '" + semester + "')";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("--- Student Validation System Test ---");
+
+        // --- Scenario 1: Valid Student ---
+        System.out.println("\nTest 1: Valid Student");
+        try {
+            Student s1 = new Student("John Doe", "Spring 2024");
+            System.out.println("Successfully created: " + s1);
+        } catch (InvalidStudentNameException | InvalidSemesterException e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+        }
+    }
+}
