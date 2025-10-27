@@ -1,0 +1,82 @@
+class AnswerProcessor implements Runnable {
+
+    @Override
+    public void run() {
+        try {
+            System.out.println("Retrieving submitted answers...");
+            Thread.sleep(1000); // Simulate retrieving time
+
+            System.out.println("Answer grading in progress...");
+            Thread.sleep(2000); // Simulate grading time
+
+            System.out.println("Saving scores to database...");
+            Thread.sleep(500); // Simulate saving time
+
+            System.out.println("Answer processing completed!");
+
+        } catch (InterruptedException e) {
+            System.err.println("Answer processing was interrupted.");
+            Thread.currentThread().interrupt(); // Restore interrupt status
+        }
+    }
+}
+
+class ResultGenerator implements Runnable {
+
+    @Override
+    public void run() {
+        try {
+            System.out.println("\nGenerating final exam results..."); // Add newline for clarity
+            Thread.sleep(1000); // Simulate generation time
+
+            System.out.println("Creating rank list...");
+            Thread.sleep(1000); // Simulate ranking time
+
+            System.out.println("Publishing results...");
+            Thread.sleep(500); // Simulate publishing time
+
+            System.out.println("Results are now available!");
+
+        } catch (InterruptedException e) {
+            System.err.println("Result generation was interrupted.");
+            Thread.currentThread().interrupt(); // Restore interrupt status
+        }
+    }
+}
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        // Create the tasks
+        Runnable answerTask = new AnswerProcessor();
+        Runnable resultTask = new ResultGenerator();
+
+        // Create the threads for the tasks
+        Thread answerThread = new Thread(answerTask);
+        Thread resultThread = new Thread(resultTask);
+
+        System.out.println("Starting online examination system sequence...");
+
+        // 1. Start the first critical task (Answer Processing)
+        answerThread.start();
+
+        try {
+            // 2. IMPORTANT: Wait for the answerThread to finish completely
+            // The main thread pauses here until answerThread dies.
+            answerThread.join();
+
+            // 3. Only after answerThread is finished, start the second task
+            System.out.println("Answer processing finished. Starting result generation...");
+            resultThread.start();
+
+            // Optional: Wait for the result thread to finish if needed
+            // resultThread.join();
+            // System.out.println("Entire examination sequence completed.");
+
+        } catch (InterruptedException e) {
+            System.err.println("Main thread was interrupted while waiting.");
+            Thread.currentThread().interrupt();
+        }
+    }
+}
