@@ -1,0 +1,168 @@
+class InvalidTitleException extends Exception {
+    public InvalidTitleException(String message) {
+        super(message);
+    }
+}
+
+class InvalidAuthorException extends Exception {
+    public InvalidAuthorException(String message) {
+        super(message);
+    }
+}
+
+class InvalidISBNException extends Exception {
+    public InvalidISBNException(String message) {
+        super(message);
+    }
+}
+
+class InvalidAvailableCopiesException extends Exception {
+    public InvalidAvailableCopiesException(String message) {
+        super(message);
+    }
+}
+
+class Book {
+    private String title;
+    private String author; // Added author as it's in the constraints
+    private String isbn;
+    private int availableCopies;
+
+    public Book(String title, String author, String isbn, int availableCopies)
+            throws InvalidTitleException, InvalidAuthorException, InvalidISBNException, InvalidAvailableCopiesException {
+        setTitle(title);
+        setAuthor(author);
+        setISBN(isbn);
+        setAvailableCopies(availableCopies);
+    }
+
+    public String getTitle() { return title; }
+    public String getAuthor() { return author; }
+    public String getIsbn() { return isbn; }
+    public int getAvailableCopies() { return availableCopies; }
+
+    public void setTitle(String title) throws InvalidTitleException {
+        // Regex based on the prompt's hint.
+        // It checks if the string contains any of the special characters.
+        String specialCharRegex = ".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*";
+
+        if (title == null || title.trim().isEmpty()) {
+            throw new InvalidTitleException("Title cannot be empty.");
+        }
+        if (title.matches(specialCharRegex)) {
+            throw new InvalidTitleException("Title must not contain special characters (e.g., !, @, #, etc).");
+        }
+        this.title = title;
+    }
+
+    public void setAuthor(String author) throws InvalidAuthorException {
+        String specialCharRegex = ".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*";
+
+        if (author == null || author.trim().isEmpty()) {
+            throw new InvalidAuthorException("Author cannot be empty.");
+        }
+        if (author.matches(specialCharRegex)) {
+            throw new InvalidAuthorException("Author name must not contain special characters (e.g., !, @, #, etc).");
+        }
+        this.author = author;
+    }
+
+    public void setISBN(String isbn) throws InvalidISBNException {
+        if (isbn == null) {
+            throw new InvalidISBNException("ISBN cannot be empty.");
+        }
+
+        if (isbn.length() != 13) {
+            throw new InvalidISBNException("ISBN must be exactly 13 digits. You entered " + isbn.length() + " digits.");
+        }
+
+        for (int i = 0; i < isbn.length(); i++) {
+            char c = isbn.charAt(i);
+            if (!Character.isDigit(c)) {
+                throw new InvalidISBNException("ISBN must contain only digits. Found illegal character: '" + c + "'");
+            }
+        }
+
+        if (!isbn.startsWith("978")) {
+            throw new InvalidISBNException("ISBN must start with the prefix '978'.");
+        }
+        this.isbn = isbn;
+    }
+
+    public void setAvailableCopies(int copies) throws InvalidAvailableCopiesException {
+        if (copies < 0) {
+            throw new InvalidAvailableCopiesException("Number of available copies must be non-negative (>= 0). You entered: " + copies);
+        }
+        this.availableCopies = copies;
+    }
+
+    @Override
+    public String toString() {
+        return "Book [Title=" + title + ", Author=" + author + ", ISBN=" + isbn + ", Copies=" + availableCopies + "]";
+    }
+}
+
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Book newBook = null; // We'll loop until this is successfully created
+
+        System.out.println("--- Library Book Management System ---");
+        System.out.println("Please enter the new book's information.");
+
+        while (newBook == null) {
+            try {
+                // 1. Get user input
+                System.out.print("Enter book title: ");
+                String title = scanner.nextLine();
+
+                System.out.print("Enter book author: ");
+                String author = scanner.nextLine();
+
+                System.out.print("Enter 13-digit ISBN (must start with 978): ");
+                String isbn = scanner.nextLine();
+
+                System.out.print("Enter number of available copies: ");
+                int copies = scanner.nextInt();
+
+                // 2. Attempt to create the Book object
+                // The constructor automatically validates the data
+                newBook = new Book(title, author, isbn, copies);
+
+                // 3. Handle success
+                System.out.println("\nSUCCESS: Book added to the system.");
+                System.out.println(newBook);
+
+            }
+            // 4. Catch specific exceptions to guide the user
+            catch (InvalidTitleException e) {
+                System.err.println("\nInput Error: " + e.getMessage());
+                System.out.println("Please try again.\n");
+            } catch (InvalidAuthorException e) {
+                System.err.println("\nInput Error: " + e.getMessage());
+                System.out.println("Please try again.\n");
+            } catch (InvalidISBNException e) {
+                System.err.println("\nInput Error: " + e.getMessage());
+                System.out.println("Please try again.\n");
+            } catch (InvalidAvailableCopiesException e) {
+                System.err.println("\nInput Error: " + e.getMessage());
+                System.out.println("Please try again.\n");
+            } catch (InputMismatchException e) {
+                // 5. Handle non-integer input for copies
+                System.err.println("\nInput Error: Invalid input for copies. Please enter a whole number.");
+                System.out.println("Please try again.\n");
+            } finally {
+                // 6. Clear the scanner buffer if there was an error
+                // This prevents an infinite loop, especially after a failed nextInt()
+                if (newBook == null) {
+                    scanner.nextLine();
+                }
+            }
+        }
+
+        scanner.close(); // Close the scanner once we exit the loop
+    }
+}
